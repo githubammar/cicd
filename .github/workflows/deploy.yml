@@ -1,0 +1,29 @@
+name: CI/CD Node App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to VM via SSH
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_KEY }}
+        script: |
+          cd ~/hello-node || git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
+          cd hello-node
+          git pull
+          docker build -t hello-node .
+          microk8s kubectl apply -f k8s-deployment.yaml
+          microk8s kubectl apply -f k8s-service.yaml
+          microk8s kubectl apply -f k8s-ingress.yaml
