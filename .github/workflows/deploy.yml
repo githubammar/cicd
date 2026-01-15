@@ -10,29 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Deploy to VM via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          port: 22
-          script: |
-            set -e
-
-            if [ ! -d "$HOME/hello-node" ]; then
-              git clone https://github.com/githubammar/cicd.git $HOME/hello-node
-            fi
-
-            cd $HOME/hello-node
-            git pull origin main
-
-            docker build -t hello-node:latest .
-
-            microk8s kubectl apply -f k8s-deployment.yaml
-            microk8s kubectl apply -f k8s-service.yaml
-            microk8s kubectl apply -f k8s-ingress.yaml
+    - name: Deploy to VM via SSH
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_KEY }}
+        script: |
+          cd ~/hello-node || git clone git@github.com:githubammar/cicd.git
+          cd hello-node
+          git pull
+          docker build -t hello-node .
+          microk8s kubectl apply -f k8s-deployment.yaml
+          microk8s kubectl apply -f k8s-service.yaml
+          microk8s kubectl apply -f k8s-ingress.yaml
 
