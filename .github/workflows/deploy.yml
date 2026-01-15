@@ -20,7 +20,7 @@ jobs:
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.VM_SSH_KEY }}
         script: |
-          cd ~/hello-node || git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
+          cd ~/hello-node || git clone git@github.com:githubammar/cicd.git
           cd hello-node
           git pull
           docker build -t hello-node .
