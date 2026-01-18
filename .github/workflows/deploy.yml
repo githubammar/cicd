@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest  # GitHub-hosted runner
 
     steps:
-      # Step 1: Checkout the workflow repository (optional)
+      # Step 1: Checkout the workflow repo (optional)
       - name: Checkout code
         uses: actions/checkout@v3
 
