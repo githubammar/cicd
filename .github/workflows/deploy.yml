@@ -21,7 +21,7 @@ jobs:
         with:
           host: ${{ secrets.VM_HOST }}        # VM IP or domain
           username: ${{ secrets.VM_USER }}    # SSH username
-          key: ${{ secrets.VM_SSH_KEY }}      # SSH private key
+          key: ${{ secrets.AMMAR }}      # SSH private key
           port: 22                             # Default SSH port
           script: |
             # Navigate or clone repo
