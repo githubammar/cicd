@@ -22,7 +22,6 @@ jobs:
       # Step 3: Import Docker image into MicroK8s
       - name: Import Docker image into MicroK8s
         run: |
-          # If you added your user to microk8s group, remove sudo
           docker save hello-node:latest | microk8s ctr image import -
 
       # Step 4: Apply Kubernetes resources
@@ -39,6 +38,13 @@ jobs:
       # Step 6: Verify pods are running
       - name: Check Pods
         run: microk8s kubectl get pods
+
+      # Step 7: Optional - Show logs for the first pod
+      - name: Check Pod Logs
+        run: |
+          POD=$(microk8s kubectl get pods -l app=hello-node -o jsonpath="{.items[0].metadata.name}")
+          microk8s kubectl logs $POD
+
 
 
 
