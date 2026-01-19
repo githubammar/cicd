@@ -1,4 +1,4 @@
-name: Deploy to VM
+name: Deploy Node App to VM
 
 on:
   push:
@@ -10,30 +10,43 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # Step 1: Checkout repo
-      - name: Checkout code
+      # Step 1: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Build Docker image
-      - name: Build Docker image
+      # Step 2: Build Docker image locally
+      - name: Build Docker Image
         run: |
-          docker build -t hello-node .
+          docker build -t hello-node:latest .
 
       # Step 3: Import Docker image into MicroK8s
-      - name: Import Docker image into MicroK8s
+      - name: Import Docker Image into MicroK8s
         run: |
-          docker save hello-node | sudo microk8s ctr image import -
+          docker save hello-node:latest | microk8s ctr image import -
 
-      # Step 4: Deploy to MicroK8s
-      - name: Deploy to MicroK8s
+      # Step 4: Apply Kubernetes manifests
+      - name: Apply Kubernetes Manifests
         run: |
           microk8s kubectl apply -f k8s-deployment.yaml
           microk8s kubectl apply -f k8s-service.yaml
           microk8s kubectl apply -f k8s-ingress.yaml
 
-      # Step 5: Optional — Verify pods
-      - name: Check Pods
-        run: microk8s kubectl get pods
+      # Step 5: Force deployment to use latest image
+      - name: Restart Deployment
+        run: microk8s kubectl rollout restart deployment hello-node
+
+      # Step 6: Wait for pods to be ready
+      - name: Wait for Pods
+        run: |
+          microk8s kubectl wait --for=condition=ready pod -l app=hello-node --timeout=120s
+
+      # Step 7: Show logs of first pod (optional)
+      - name: Show Pod Logs
+        run: |
+          POD=$(microk8s kubectl get pods -l app=hello-node -o jsonpath="{.items[0].metadata.name}")
+          echo "Logs from pod $POD:"
+          microk8s kubectl logs $POD
+
 
 
 
