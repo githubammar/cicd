@@ -15,5 +15,6 @@ spec:
       containers:
       - name: node-app
         image: hello-node:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 3000
