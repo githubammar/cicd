@@ -1,6 +1,5 @@
 name: Deploy to VM
 
-# Trigger deployment on push to main branch
 on:
   push:
     branches:
@@ -8,34 +7,22 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # GitHub-hosted runner
+    runs-on: self-hosted
 
     steps:
-      # Step 1: Checkout the workflow repo (optional)
+      # Step 1: Checkout repo
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: SSH into your VM and run deployment commands
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VM_HOST }}        # VM IP or domain
-          username: ${{ secrets.VM_USER }}    # SSH username
-          key: ${{ secrets.VM_SSH_KEY }}      # SSH private key
-          port: 22                             # Default SSH port
-          script: |
-            # Navigate or clone repo
-            cd ~/hello-node || git clone git@github.com:githubammar/cicd.git hello-node
-            cd hello-node
+      # Step 2: Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t hello-node .
 
-            # Pull latest code
-            git pull
-
-            # Build Docker image
-            docker build -t hello-node .
-
-            # Deploy to MicroK8s
-            microk8s kubectl apply -f k8s-deployment.yaml
-            microk8s kubectl apply -f k8s-service.yaml
-            microk8s kubectl apply -f k8s-ingress.yaml
+      # Step 3: Deploy to MicroK8s
+      - name: Deploy to MicroK8s
+        run: |
+          microk8s kubectl apply -f k8s-deployment.yaml
+          microk8s kubectl apply -f k8s-service.yaml
+          microk8s kubectl apply -f k8s-ingress.yaml
 
